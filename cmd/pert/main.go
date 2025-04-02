@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
+	"github.com/ink8bit/pert/internal/version"
 	"github.com/ink8bit/pert/pkg/pert"
 )
 
@@ -20,7 +22,15 @@ func main() {
 	var name string
 	flag.StringVar(&name, "n", "", "task name")
 
+	var ver bool
+	flag.BoolVar(&ver, "v", false, "print version")
+
 	flag.Parse()
+
+	if ver {
+		fmt.Println(version.Print())
+		os.Exit(0)
+	}
 
 	if opt == 0 && real == 0 && pes == 0 {
 		fmt.Println("No value provided")
