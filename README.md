@@ -1,5 +1,7 @@
 # pert CLI
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/ink8bit/pert.svg)](https://pkg.go.dev/github.com/ink8bit/pert)
+
 PERT (Program Evaluation and Review Technique) is a statistical tool used in
 project management that is designed to analyze and represent the tasks involved
 in completing a given project.
