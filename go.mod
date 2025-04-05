@@ -1,3 +1,3 @@
 module github.com/ink8bit/pert
 
-go 1.24.1
+go 1.24
