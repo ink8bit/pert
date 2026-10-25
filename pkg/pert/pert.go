@@ -15,8 +15,9 @@ func Expect(opt, real, pes float64) float64 {
 	return (opt + 4*real + pes) / 6
 }
 
-// Variance calculates PERT chart standard deviation.
+// StdDev returns the PERT standard deviation for the given pessimistic and
+// optimistic estimates.
 // The larger results you get, the less confidence you have in your estimate.
-func Variance(pes, opt float64) float64 {
+func StdDev(pes, opt float64) float64 {
 	return (pes - opt) / 6
 }
