@@ -37,7 +37,10 @@ func FuzzExpect(f *testing.F) {
 		slices.Sort(estimates)
 		opt, real, pes := estimates[0], estimates[1], estimates[2]
 
-		got := pert.Expect(opt, real, pes)
+		got, err := pert.Expect(opt, real, pes)
+		if err != nil {
+			t.Fatalf("Expect(%g, %g, %g) returned an error: %v", opt, real, pes, err)
+		}
 		if math.IsNaN(got) || math.IsInf(got, 0) {
 			t.Fatalf("Expect(%g, %g, %g) = %g, want a finite result", opt, real, pes, got)
 		}

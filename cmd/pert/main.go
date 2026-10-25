@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"math"
 	"os"
 
 	"github.com/ink8bit/pert/pkg/pert"
@@ -51,19 +50,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	for _, value := range []float64{opt, real, pes} {
-		if math.IsNaN(value) || math.IsInf(value, 0) {
-			fmt.Fprintln(stderr, "estimates must be finite numbers")
-			return 2
-		}
-	}
-	if opt < 0 || opt > real || real > pes {
-		fmt.Fprintln(stderr, "estimates must satisfy 0 <= optimistic <= realistic <= pessimistic")
+	e, err := pert.Expect(opt, real, pes)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
 		return 2
 	}
-
-	e := pert.Expect(opt, real, pes)
-	dev := pert.StdDev(pes, opt)
+	dev, err := pert.StdDev(pes, opt)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
 
 	if _, err := fmt.Fprintln(stdout, output(name, e, dev)); err != nil {
 		fmt.Fprintf(stderr, "failed to write output: %v\n", err)
