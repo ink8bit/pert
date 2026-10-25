@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -46,6 +47,11 @@ func TestRunValidEstimates(t *testing.T) {
 			name: "fractional estimates",
 			args: []string{"-o", "0.5", "-r", "1.5", "-p", "2.5"},
 			want: "- Expected:\t1.50\n- Deviation:\t0.33\n",
+		},
+		{
+			name: "large finite estimates",
+			args: []string{"-o", "1e308", "-r", "1e308", "-p", "1e308"},
+			want: fmt.Sprintf("- Expected:\t%.2f\n- Deviation:\t0.00\n", 1e308),
 		},
 	}
 
