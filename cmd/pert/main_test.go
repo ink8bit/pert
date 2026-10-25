@@ -117,6 +117,55 @@ func TestRunInvalidEstimates(t *testing.T) {
 	}
 }
 
+func TestRunUnexpectedArguments(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "trailing argument",
+			args: []string{"-o", "1", "-r", "3", "-p", "13", "unexpected"},
+			want: "unexpected arguments: [\"unexpected\"]\n",
+		},
+		{
+			name: "argument before flags",
+			args: []string{"unexpected", "-o", "1", "-r", "3", "-p", "13"},
+			want: "unexpected arguments: [\"unexpected\" \"-o\" \"1\" \"-r\" \"3\" \"-p\" \"13\"]\n",
+		},
+		{
+			name: "argument between flags",
+			args: []string{"-o", "1", "unexpected", "-r", "3", "-p", "13"},
+			want: "unexpected arguments: [\"unexpected\" \"-r\" \"3\" \"-p\" \"13\"]\n",
+		},
+		{
+			name: "flags after trailing argument",
+			args: []string{"-o", "1", "-r", "3", "-p", "13", "unexpected", "-r", "100"},
+			want: "unexpected arguments: [\"unexpected\" \"-r\" \"100\"]\n",
+		},
+		{
+			name: "arguments after separator",
+			args: []string{"-o", "1", "-r", "3", "-p", "13", "--", "-r", "100"},
+			want: "unexpected arguments: [\"-r\" \"100\"]\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := run(tt.args, &stdout, &stderr); code != 2 {
+				t.Errorf("exit code = %d, want 2", code)
+			}
+			if stdout.Len() != 0 {
+				t.Errorf("unexpected stdout: %s", &stdout)
+			}
+			if got := stderr.String(); got != tt.want {
+				t.Errorf("stderr = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRunHelp(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	if code := run([]string{"-h"}, &stdout, &stderr); code != 0 {

@@ -37,6 +37,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
+	if flags.NArg() != 0 {
+		fmt.Fprintf(stderr, "unexpected arguments: %q\n", flags.Args())
+		return 2
+	}
+
 	provided := make(map[string]bool)
 	flags.Visit(func(f *flag.Flag) {
 		provided[f.Name] = true
