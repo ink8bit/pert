@@ -22,14 +22,18 @@ go get github.com/ink8bit/pert
 
 ## Usage
 
+All three estimates (`-o`, `-r`, and `-p`) are required. They must be finite
+numbers satisfying `0 <= optimistic <= realistic <= pessimistic`. Zero estimates
+are allowed when explicitly supplied.
+
 ```console
 Usage of pert:
   -n string
         task name
   -o float
-        optimistic value
+        optimistic value (required)
   -p float
-        pessimistic value
+        pessimistic value (required)
   -r float
-        realistic value
+        realistic value (required)
 ```
