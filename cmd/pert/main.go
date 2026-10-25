@@ -58,9 +58,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 
 	e := pert.Expect(opt, real, pes)
-	v := pert.Variance(pes, opt)
+	dev := pert.StdDev(pes, opt)
 
-	fmt.Fprintln(stdout, output(name, e, v))
+	fmt.Fprintln(stdout, output(name, e, dev))
 	return 0
 }
 
