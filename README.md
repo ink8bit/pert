@@ -37,3 +37,33 @@ Usage of pert:
   -r float
         realistic value (required)
 ```
+
+## Library
+
+`pert.Expect(opt, real, pes)` and `pert.StdDev(pes, opt)` return `(float64, error)`.
+Both reject non-finite or negative estimates. `Expect` requires
+`optimistic <= realistic <= pessimistic`; `StdDev` requires
+`optimistic <= pessimistic`. Equal and zero estimates are valid.
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/ink8bit/pert/pkg/pert"
+)
+
+func main() {
+    expected, err := pert.Expect(1, 3, 13)
+    if err != nil {
+        log.Fatal(err)
+    }
+    deviation, err := pert.StdDev(13, 1)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Expected: %.2f, deviation: %.2f\n", expected, deviation)
+}
+```
