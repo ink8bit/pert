@@ -65,7 +65,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 	e := pert.Expect(opt, real, pes)
 	dev := pert.StdDev(pes, opt)
 
-	fmt.Fprintln(stdout, output(name, e, dev))
+	if _, err := fmt.Fprintln(stdout, output(name, e, dev)); err != nil {
+		fmt.Fprintf(stderr, "failed to write output: %v\n", err)
+		return 1
+	}
 	return 0
 }
 
