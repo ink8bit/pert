@@ -34,12 +34,12 @@ func Expect(opt, real, pes float64) (float64, error) {
 	return weighted / 6, nil
 }
 
-// StdDev returns the PERT standard deviation for the given pessimistic and
-// optimistic estimates.
+// StdDev returns the PERT standard deviation for the given optimistic and
+// pessimistic estimates, in that order.
 // The larger results you get, the less confidence you have in your estimate.
 // It returns an error if the estimates are not finite numbers satisfying
 // 0 <= opt <= pes.
-func StdDev(pes, opt float64) (float64, error) {
+func StdDev(opt, pes float64) (float64, error) {
 	if err := validateFinite(opt, pes); err != nil {
 		return 0, err
 	}

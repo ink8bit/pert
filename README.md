@@ -40,10 +40,13 @@ Usage of pert:
 
 ## Library
 
-`pert.Expect(opt, real, pes)` and `pert.StdDev(pes, opt)` return `(float64, error)`.
+`pert.Expect(opt, real, pes)` and `pert.StdDev(opt, pes)` return `(float64, error)`.
 Both reject non-finite or negative estimates. `Expect` requires
 `optimistic <= realistic <= pessimistic`; `StdDev` requires
 `optimistic <= pessimistic`. Equal and zero estimates are valid.
+
+Both functions take estimates from optimistic to pessimistic. `StdDev` previously
+accepted the reverse order; existing callers must swap its arguments.
 
 ```go
 package main
@@ -60,7 +63,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    deviation, err := pert.StdDev(13, 1)
+    deviation, err := pert.StdDev(1, 13)
     if err != nil {
         log.Fatal(err)
     }

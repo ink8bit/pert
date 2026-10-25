@@ -55,7 +55,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, err)
 		return 2
 	}
-	dev, err := pert.StdDev(pes, opt)
+	dev, err := pert.StdDev(opt, pes)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 2
