@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -170,6 +171,37 @@ func TestRunUnexpectedArguments(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunOutputError(t *testing.T) {
+	writeErr := errors.New("output unavailable")
+	for _, tt := range []struct {
+		name    string
+		written int
+	}{
+		{name: "complete write failure", written: 0},
+		{name: "partial write failure", written: 5},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			stdout := failingWriter{written: tt.written, err: writeErr}
+			var stderr bytes.Buffer
+			if code := run([]string{"-o", "1", "-r", "3", "-p", "13"}, stdout, &stderr); code != 1 {
+				t.Errorf("exit code = %d, want 1", code)
+			}
+			if got, want := stderr.String(), "failed to write output: output unavailable\n"; got != want {
+				t.Errorf("stderr = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+type failingWriter struct {
+	written int
+	err     error
+}
+
+func (w failingWriter) Write([]byte) (int, error) {
+	return w.written, w.err
 }
 
 func TestRunHelp(t *testing.T) {
