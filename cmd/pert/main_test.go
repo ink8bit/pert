@@ -4,9 +4,44 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 )
+
+func TestRunVersion(t *testing.T) {
+	contents, err := os.ReadFile("version.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantVersion := strings.TrimSpace(string(contents))
+	if wantVersion == "" {
+		t.Fatal("version.txt must contain a version")
+	}
+
+	for _, tt := range []struct {
+		name string
+		args []string
+	}{
+		{name: "double dash", args: []string{"--version"}},
+		{name: "single dash", args: []string{"-version"}},
+		{name: "incomplete estimates", args: []string{"-o", "1", "--version"}},
+		{name: "invalid estimates", args: []string{"--version", "-o", "-1", "-r", "3", "-p", "13"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := run(tt.args, &stdout, &stderr); code != 0 {
+				t.Fatalf("exit code = %d, want 0; stderr: %s", code, &stderr)
+			}
+			if got, want := stdout.String(), wantVersion+"\n"; got != want {
+				t.Errorf("stdout = %q, want %q", got, want)
+			}
+			if stderr.Len() != 0 {
+				t.Errorf("unexpected stderr: %s", &stderr)
+			}
+		})
+	}
+}
 
 func TestRunValidEstimates(t *testing.T) {
 	tests := []struct {
@@ -14,6 +49,11 @@ func TestRunValidEstimates(t *testing.T) {
 		args []string
 		want string
 	}{
+		{
+			name: "version flag disabled",
+			args: []string{"--version=false", "-o", "1", "-r", "3", "-p", "13"},
+			want: "- Expected:\t4.33\n- Deviation:\t2.00\n",
+		},
 		{
 			name: "named task",
 			args: []string{"-n", "Example", "-o", "1", "-r", "3", "-p", "13"},
@@ -81,6 +121,7 @@ func TestRunInvalidEstimates(t *testing.T) {
 		want string
 	}{
 		{name: "no estimates", want: required},
+		{name: "version flag disabled without estimates", args: []string{"--version=false"}, want: required},
 		{name: "only optimistic", args: []string{"-o", "12"}, want: required},
 		{name: "only realistic", args: []string{"-r", "3"}, want: required},
 		{name: "only pessimistic", args: []string{"-p", "13"}, want: required},
@@ -131,6 +172,16 @@ func TestRunUnexpectedArguments(t *testing.T) {
 		want string
 	}{
 		{
+			name: "version command",
+			args: []string{"version"},
+			want: "unexpected arguments: [\"version\"]\n",
+		},
+		{
+			name: "argument after version flag",
+			args: []string{"--version", "unexpected"},
+			want: "unexpected arguments: [\"unexpected\"]\n",
+		},
+		{
 			name: "trailing argument",
 			args: []string{"-o", "1", "-r", "3", "-p", "13", "unexpected"},
 			want: "unexpected arguments: [\"unexpected\"]\n",
@@ -177,15 +228,18 @@ func TestRunOutputError(t *testing.T) {
 	writeErr := errors.New("output unavailable")
 	for _, tt := range []struct {
 		name    string
+		args    []string
 		written int
 	}{
-		{name: "complete write failure", written: 0},
-		{name: "partial write failure", written: 5},
+		{name: "complete write failure", args: []string{"-o", "1", "-r", "3", "-p", "13"}, written: 0},
+		{name: "partial write failure", args: []string{"-o", "1", "-r", "3", "-p", "13"}, written: 5},
+		{name: "version complete write failure", args: []string{"--version"}, written: 0},
+		{name: "version partial write failure", args: []string{"--version"}, written: 3},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			stdout := failingWriter{written: tt.written, err: writeErr}
 			var stderr bytes.Buffer
-			if code := run([]string{"-o", "1", "-r", "3", "-p", "13"}, stdout, &stderr); code != 1 {
+			if code := run(tt.args, stdout, &stderr); code != 1 {
 				t.Errorf("exit code = %d, want 1", code)
 			}
 			if got, want := stderr.String(), "failed to write output: output unavailable\n"; got != want {
@@ -214,5 +268,8 @@ func TestRunHelp(t *testing.T) {
 	}
 	if got := stderr.String(); !strings.Contains(got, "Usage of pert:") {
 		t.Errorf("stderr = %q, want help text", got)
+	}
+	if got := stderr.String(); !strings.Contains(got, "-version") {
+		t.Errorf("stderr = %q, want version flag in help text", got)
 	}
 }

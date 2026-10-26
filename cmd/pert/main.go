@@ -1,13 +1,18 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/ink8bit/pert/pkg/pert"
 )
+
+//go:embed version.txt
+var version string
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
@@ -16,6 +21,9 @@ func main() {
 func run(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("pert", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+
+	var showVersion bool
+	flags.BoolVar(&showVersion, "version", false, "show version and exit")
 
 	var opt float64
 	flags.Float64Var(&opt, "o", 0, "optimistic value (required)")
@@ -41,6 +49,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
+	if showVersion {
+		return writeOutput(stdout, stderr, strings.TrimSpace(version))
+	}
+
 	provided := make(map[string]bool)
 	flags.Visit(func(f *flag.Flag) {
 		provided[f.Name] = true
@@ -61,7 +73,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	if _, err := fmt.Fprintln(stdout, output(name, e, dev)); err != nil {
+	return writeOutput(stdout, stderr, output(name, e, dev))
+}
+
+func writeOutput(stdout, stderr io.Writer, value string) int {
+	if _, err := fmt.Fprintln(stdout, value); err != nil {
 		fmt.Fprintf(stderr, "failed to write output: %v\n", err)
 		return 1
 	}
