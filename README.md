@@ -44,22 +44,27 @@ both results use that unit. The tool does not perform unit conversion.
 | `-p` | Pessimistic duration | Yes |
 | `-n` | Task name, shown above the results | No |
 | `-h` | Show help | No |
+| `--version` | Show version and exit | No |
 
 All three estimates (`-o`, `-r`, and `-p`) are required. They must be finite
 numbers satisfying `0 <= optimistic <= realistic <= pessimistic`. Zero estimates
 are allowed when explicitly supplied; negative values, `NaN`, and infinities are
 rejected. Positional arguments are rejected.
 
+Print the CLI version with `pert --version`, without supplying estimates. The
+version is embedded into the binary from `cmd/pert/version.txt` at build time;
+the file is not needed at runtime.
+
 The CLI prints results to two decimal places, so very small positive results can
 appear as `0.00`. Use the library when you need the unformatted `float64` values.
 
-Results are written to standard output; help and errors are written to standard
-error. Exit codes are:
+Results and the version are written to standard output; help and errors are
+written to standard error. Exit codes are:
 
 | Code | Meaning |
 | --- | --- |
-| `0` | Successful calculation or help request |
-| `1` | Failed to write results |
+| `0` | Successful calculation, version, or help request |
+| `1` | Failed to write output |
 | `2` | Invalid flags, missing or invalid estimates, or unexpected arguments |
 
 ## Calculations
